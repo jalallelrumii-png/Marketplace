@@ -1,48 +1,44 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>ADMIN PANEL - GLOBAL</title>
+    <title>BOSS_ADMIN</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 </head>
-<body class="bg-slate-900 text-white p-6 text-sm">
-    <h1 class="text-xl font-black mb-6 italic text-indigo-500">KONTROL GUDANG</h1>
+<body class="bg-[#0f172a] text-white p-6 text-xs uppercase font-bold">
+    <h1 class="text-indigo-500 mb-6 italic text-lg">KONTROL GUDANG</h1>
     
-    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 max-w-md mb-6">
-        <input type="text" id="name" placeholder="Nama Barang" class="w-full bg-slate-900 p-2 mb-2 rounded border border-slate-700">
-        <input type="number" id="price" placeholder="Harga" class="w-full bg-slate-900 p-2 mb-2 rounded border border-slate-700">
-        <input type="text" id="img" placeholder="Link Gambar" class="w-full bg-slate-900 p-2 mb-4 rounded border border-slate-700">
-        <button onclick="upload()" class="w-full bg-indigo-600 py-2 rounded font-bold uppercase tracking-widest">Update Etalase Dunia</button>
+    <div class="space-y-4 max-w-sm">
+        <input id="n" placeholder="NAMA BARANG" class="w-full bg-slate-800 p-3 rounded border border-slate-700 outline-none">
+        <input id="p" type="number" placeholder="HARGA" class="w-full bg-slate-800 p-3 rounded border border-slate-700 outline-none">
+        <input id="i" placeholder="LINK GAMBAR (URL)" class="w-full bg-slate-800 p-3 rounded border border-slate-700 outline-none">
+        <button onclick="up()" class="w-full bg-indigo-600 p-3 rounded text-white tracking-widest">UPDATE ETALASE DUNIA</button>
     </div>
 
-    <div id="list" class="space-y-2 max-w-md"></div>
-
     <script>
-        // --- PAKA CONFIG YANG SAMA DENGAN INDEX ---
-        const firebaseConfig = { /* COPAS CONFIG FIREBASE LO DI SINI */ };
+        // MASUKKIN CONFIG LO DI SINI, JANGAN KOSONG!
+        const firebaseConfig = {
+            apiKey: "PASTE_DI_SINI",
+            authDomain: "PASTE_DI_SINI",
+            projectId: "PASTE_DI_SINI",
+            storageBucket: "PASTE_DI_SINI",
+            messagingSenderId: "PASTE_DI_SINI",
+            appId: "PASTE_DI_SINI"
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        function upload() {
-            const name = document.getElementById('name').value;
-            const price = document.getElementById('price').value;
-            const img = document.getElementById('img').value;
+        function up() {
+            const name = document.getElementById('n').value;
+            const price = document.getElementById('p').value;
+            const img = document.getElementById('i').value;
             
-            db.collection("products").add({ name, price, img })
-              .then(() => { alert("Barang Live!"); location.reload(); });
-        }
+            if(!img.includes('http')) return alert("Link Gambar Harus URL (https://...)!");
 
-        db.collection("products").get().then((snap) => {
-            const list = document.getElementById('list');
-            snap.forEach(doc => {
-                list.innerHTML += `<div class="p-2 bg-slate-800 border border-slate-700 flex justify-between rounded text-xs">
-                    <span>${doc.data().name}</span>
-                    <button onclick="db.collection('products').doc('${doc.id}').delete().then(()=>location.reload())" class="text-red-500">Hapus</button>
-                </div>`;
-            });
-        });
+            db.collection("products").add({ name, price: Number(price), img })
+              .then(() => { alert("LIVE!"); location.reload(); });
+        }
     </script>
 </body>
 </html>
