@@ -2,90 +2,47 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>ADMIN PANEL - GLOBAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-slate-900 text-slate-300 text-sm"> <div id="login-screen" class="min-h-screen flex items-center justify-center">
-        <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 w-80">
-            <h2 class="text-white font-bold mb-4">Admin Login</h2>
-            <input type="password" id="pass" class="w-full p-2 rounded bg-slate-900 border border-slate-700 mb-4 outline-none focus:border-indigo-500" placeholder="Password">
-            <button onclick="checkPass()" class="w-full bg-indigo-600 text-white p-2 rounded font-bold">Masuk</button>
-        </div>
+<body class="bg-slate-900 text-white p-6 text-sm">
+    <h1 class="text-xl font-black mb-6 italic text-indigo-500">KONTROL GUDANG</h1>
+    
+    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 max-w-md mb-6">
+        <input type="text" id="name" placeholder="Nama Barang" class="w-full bg-slate-900 p-2 mb-2 rounded border border-slate-700">
+        <input type="number" id="price" placeholder="Harga" class="w-full bg-slate-900 p-2 mb-2 rounded border border-slate-700">
+        <input type="text" id="img" placeholder="Link Gambar" class="w-full bg-slate-900 p-2 mb-4 rounded border border-slate-700">
+        <button onclick="upload()" class="w-full bg-indigo-600 py-2 rounded font-bold uppercase tracking-widest">Update Etalase Dunia</button>
     </div>
 
-    <div id="admin-content" class="hidden p-6 max-w-4xl mx-auto">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-xl font-black text-white italic">ADMIN_PANEL</h1>
-            <button onclick="location.href='index.html'" class="text-xs bg-slate-700 px-3 py-1 rounded">Cek Web</button>
-        </div>
-
-        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 mb-8">
-            <h2 class="text-indigo-400 font-bold mb-4 uppercase text-xs">Tambah / Edit Produk</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input type="text" id="p-name" class="bg-slate-900 p-2 rounded border border-slate-700" placeholder="Nama Barang">
-                <input type="number" id="p-price" class="bg-slate-900 p-2 rounded border border-slate-700" placeholder="Harga (Angka)">
-                <input type="text" id="p-img" class="bg-slate-900 p-2 rounded border border-slate-700" placeholder="Link Gambar (URL)">
-                <button onclick="saveProduct()" class="bg-indigo-600 text-white font-bold rounded p-2">Simpan Produk</button>
-            </div>
-        </div>
-
-        <h2 class="text-indigo-400 font-bold mb-4 uppercase text-xs">Daftar Barang</h2>
-        <div id="admin-list" class="space-y-2">
-            </div>
-    </div>
+    <div id="list" class="space-y-2 max-w-md"></div>
 
     <script>
-        const PASS = "bos123"; // GANTI PASSWORD LO DI SINI!
+        // --- PAKA CONFIG YANG SAMA DENGAN INDEX ---
+        const firebaseConfig = { /* COPAS CONFIG FIREBASE LO DI SINI */ };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-        function checkPass() {
-            if(document.getElementById('pass').value === PASS) {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('admin-content').classList.remove('hidden');
-                renderAdminList();
-            } else { alert("Salah!"); }
-        }
-
-        function saveProduct() {
-            const name = document.getElementById('p-name').value;
-            const price = document.getElementById('p-price').value;
-            const img = document.getElementById('p-img').value;
-
-            if(!name || !price) return alert("Isi yang bener!");
-
-            // Ambil data lama dari LocalStorage
-            let products = JSON.parse(localStorage.getItem('products')) || [];
-            products.push({ id: Date.now(), name, price: parseInt(price), img });
+        function upload() {
+            const name = document.getElementById('name').value;
+            const price = document.getElementById('price').value;
+            const img = document.getElementById('img').value;
             
-            localStorage.setItem('products', JSON.stringify(products));
-            alert("Berhasil!");
-            renderAdminList();
+            db.collection("products").add({ name, price, img })
+              .then(() => { alert("Barang Live!"); location.reload(); });
         }
 
-        function deleteProduct(id) {
-            let products = JSON.parse(localStorage.getItem('products'));
-            products = products.filter(p => p.id !== id);
-            localStorage.setItem('products', JSON.stringify(products));
-            renderAdminList();
-        }
-
-        function renderAdminList() {
-            const list = document.getElementById('admin-list');
-            const products = JSON.parse(localStorage.getItem('products')) || [];
-            list.innerHTML = products.map(p => `
-                <div class="flex justify-between items-center bg-slate-800 p-3 rounded-lg border border-slate-700">
-                    <div>
-                        <p class="font-bold text-white">${p.name}</p>
-                        <p class="text-xs text-slate-500">Rp ${p.price.toLocaleString()}</p>
-                    </div>
-                    <button onclick="deleteProduct(${p.id})" class="text-red-500 hover:text-red-400">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            `).join('');
-            lucide.createIcons();
-        }
+        db.collection("products").get().then((snap) => {
+            const list = document.getElementById('list');
+            snap.forEach(doc => {
+                list.innerHTML += `<div class="p-2 bg-slate-800 border border-slate-700 flex justify-between rounded text-xs">
+                    <span>${doc.data().name}</span>
+                    <button onclick="db.collection('products').doc('${doc.id}').delete().then(()=>location.reload())" class="text-red-500">Hapus</button>
+                </div>`;
+            });
+        });
     </script>
 </body>
 </html>
